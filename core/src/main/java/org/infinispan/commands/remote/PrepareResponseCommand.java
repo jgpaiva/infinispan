@@ -25,6 +25,10 @@ public class PrepareResponseCommand extends BaseRpcCommand {
    private GlobalTransaction globalTransaction;
    private transient TotalOrderManager totalOrderManager;
 
+   private PrepareResponseCommand() {
+	      super(null);
+   }
+   
    public PrepareResponseCommand(String cacheName) {
       super(cacheName);
    }
