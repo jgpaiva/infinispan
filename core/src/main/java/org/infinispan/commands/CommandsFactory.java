@@ -34,6 +34,7 @@ import org.infinispan.commands.read.SizeCommand;
 import org.infinispan.commands.read.ValuesCommand;
 import org.infinispan.commands.remote.ClusteredGetCommand;
 import org.infinispan.commands.remote.DataPlacementCommand;
+import org.infinispan.commands.remote.DummyRpcCommand;
 import org.infinispan.commands.remote.MultipleRpcCommand;
 import org.infinispan.commands.remote.PrepareResponseCommand;
 import org.infinispan.commands.remote.SingleRpcCommand;
@@ -391,4 +392,12 @@ public interface CommandsFactory {
     * @return        the data placement command instance
     */
    DataPlacementCommand buildDataPlacementCommand(DataPlacementCommand.Type type, long roundId);
+   
+   /**
+    * builds a dummy command
+    *
+    * @param key     the key to be sent in the command
+    * @return        the dummy command instance
+    */
+   DummyRpcCommand buildDummyRpcCommand(Object key);
 }

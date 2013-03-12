@@ -22,6 +22,8 @@
  */
 package org.infinispan.commands;
 
+import java.util.Map;
+
 import org.infinispan.CacheException;
 import org.infinispan.commands.control.CacheViewControlCommand;
 import org.infinispan.commands.control.LockControlCommand;
@@ -34,6 +36,7 @@ import org.infinispan.commands.read.MapReduceCommand;
 import org.infinispan.commands.remote.CacheRpcCommand;
 import org.infinispan.commands.remote.ClusteredGetCommand;
 import org.infinispan.commands.remote.DataPlacementCommand;
+import org.infinispan.commands.remote.DummyRpcCommand;
 import org.infinispan.commands.remote.MultipleRpcCommand;
 import org.infinispan.commands.remote.PrepareResponseCommand;
 import org.infinispan.commands.remote.SingleRpcCommand;
@@ -62,8 +65,6 @@ import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.scopes.Scope;
 import org.infinispan.factories.scopes.Scopes;
 import org.infinispan.manager.EmbeddedCacheManager;
-
-import java.util.Map;
 
 /**
  * Specifically used to create un-initialized {@link org.infinispan.commands.ReplicableCommand}s from a byte stream.
@@ -226,6 +227,9 @@ public class RemoteCommandsFactory {
             case DataPlacementCommand.COMMAND_ID:
                command = new DataPlacementCommand(cacheName);
                break;
+            case DummyRpcCommand.COMMAND_ID:
+            	command = new DummyRpcCommand(cacheName);
+                break;
             default:
                throw new CacheException("Unknown command id " + id + "!");
          }

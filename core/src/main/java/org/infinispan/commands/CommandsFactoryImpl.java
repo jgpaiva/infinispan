@@ -36,6 +36,7 @@ import org.infinispan.commands.read.SizeCommand;
 import org.infinispan.commands.read.ValuesCommand;
 import org.infinispan.commands.remote.ClusteredGetCommand;
 import org.infinispan.commands.remote.DataPlacementCommand;
+import org.infinispan.commands.remote.DummyRpcCommand;
 import org.infinispan.commands.remote.MultipleRpcCommand;
 import org.infinispan.commands.remote.PrepareResponseCommand;
 import org.infinispan.commands.remote.SingleRpcCommand;
@@ -418,6 +419,10 @@ public class CommandsFactoryImpl implements CommandsFactory {
             DataPlacementCommand dataPlacementRequestCommand = (DataPlacementCommand)c;
             dataPlacementRequestCommand.initialize(dataPlacementManager);
             break;
+         case DummyRpcCommand.COMMAND_ID:
+        	 DummyRpcCommand dummyRpcCommand = (DummyRpcCommand)c;
+        	 dummyRpcCommand.initialize();
+             break;
          default:
             ModuleCommandInitializer mci = moduleCommandInitializers.get(c.getCommandId());
             if (mci != null) {
@@ -508,5 +513,10 @@ public class CommandsFactoryImpl implements CommandsFactory {
    @Override
    public DataPlacementCommand buildDataPlacementCommand(DataPlacementCommand.Type type, long roundId) {
       return new DataPlacementCommand(cacheName, type, roundId);
+   }
+   
+   @Override
+   public DummyRpcCommand buildDummyRpcCommand(Object key) {
+      return new DummyRpcCommand(cacheName, key);
    }
 }

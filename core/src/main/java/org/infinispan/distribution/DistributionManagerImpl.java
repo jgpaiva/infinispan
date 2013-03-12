@@ -24,6 +24,7 @@ package org.infinispan.distribution;
 
 import org.infinispan.commands.CommandsFactory;
 import org.infinispan.commands.remote.ClusteredGetCommand;
+import org.infinispan.commands.remote.DummyRpcCommand;
 import org.infinispan.config.Configuration;
 import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.container.entries.InternalCacheEntry;
@@ -171,6 +172,14 @@ public class DistributionManagerImpl implements DistributionManager {
       ClusteredGetCommand get = cf.buildClusteredGetCommand(key, ctx.getFlags(), acquireRemoteLock, gtx);
 
       List<Address> targets = locate(key);
+      
+      //simulate querying a directory
+      DummyRpcCommand dummyCmd = cf.buildDummyRpcCommand(key);
+      Collection<Address> toContact = new LinkedList<Address>();
+      toContact.add(rpcManager.getTransport().getMembers().get(0));
+      Map<Address, Response> retVal = rpcManager.invokeRemotely(toContact, dummyCmd, ResponseMode.SYNCHRONOUS, configuration.getSyncReplTimeout());
+      
+      
       // if any of the recipients has left the cluster since the command was issued, just don't wait for its response
       targets.retainAll(rpcManager.getTransport().getMembers());
       ResponseFilter filter = new ClusteredGetResponseValidityFilter(targets, getAddress());

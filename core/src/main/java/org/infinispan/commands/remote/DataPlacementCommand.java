@@ -62,6 +62,9 @@ public class DataPlacementCommand extends BaseRpcCommand {
    private ObjectLookup objectLookup;
    private Address[] members;
 
+   private DataPlacementCommand() {
+	   super(null);
+   }
 
    public DataPlacementCommand(String cacheName, Type type, long roundId) {
       super(cacheName);
