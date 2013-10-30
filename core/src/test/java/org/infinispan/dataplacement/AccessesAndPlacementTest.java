@@ -11,6 +11,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.testng.annotations.Test;
 
+import java.io.ObjectInputStream.GetField;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -41,7 +42,7 @@ public class AccessesAndPlacementTest {
       ClusterSnapshot clusterSnapshot = createClusterSnapshot(4);
       ObjectPlacementManager manager = createObjectPlacementManager();
       manager.resetState(clusterSnapshot);
-      Map<?, ?> newOwners = manager.calculateObjectsToMove();
+      Map<?, ?> newOwners = manager.calculateObjectsToMove().getFst();
       assert newOwners.isEmpty();
    }
 
@@ -86,7 +87,7 @@ public class AccessesAndPlacementTest {
 
       manager.aggregateRequest(clusterSnapshot.get(1), new ObjectRequest(request, null));
 
-      Map<Object, OwnersInfo> newOwners = manager.calculateObjectsToMove();
+      Map<Object, OwnersInfo> newOwners = manager.calculateObjectsToMove().getFst();
 
       assert newOwners.size() == 2;
 
@@ -134,7 +135,7 @@ public class AccessesAndPlacementTest {
 
       manager.aggregateRequest(clusterSnapshot.get(3), new ObjectRequest(remote, null));
 
-      Map<Object, OwnersInfo> newOwners = manager.calculateObjectsToMove();
+      Map<Object, OwnersInfo> newOwners = manager.calculateObjectsToMove().getFst();
 
       assert newOwners.size() == 2;
 
@@ -173,7 +174,7 @@ public class AccessesAndPlacementTest {
 
       manager.aggregateRequest(clusterSnapshot.get(3), new ObjectRequest(null, request));
 
-      Map<Object, OwnersInfo> newOwners = manager.calculateObjectsToMove();
+      Map<Object, OwnersInfo> newOwners = manager.calculateObjectsToMove().getFst();
 
       assert newOwners.isEmpty();
    }

@@ -20,13 +20,15 @@ import java.util.Map;
  */
 public class C50MLObjectLookup implements ObjectLookup {
 
+   private final int epoch;
    private final BloomFilter bloomFilter;
    private final DecisionTree[] decisionTreeArray;
    private transient KeyFeatureManager keyFeatureManager;
 
-   public C50MLObjectLookup(int numberOfOwners, BloomFilter bloomFilter) {
+   public C50MLObjectLookup(int epoch, int numberOfOwners, BloomFilter bloomFilter) {
       this.bloomFilter = bloomFilter;
       decisionTreeArray = new DecisionTree[numberOfOwners];
+      this.epoch = epoch;
    }
 
    public void setDecisionTreeList(int index, DecisionTree decisionTree) {
@@ -37,6 +39,11 @@ public class C50MLObjectLookup implements ObjectLookup {
       this.keyFeatureManager = keyFeatureManager;
    }
 
+   @Override
+   public int getEpoch(){
+	   return epoch;
+   }
+   
    public BloomFilter getBloomFilter() {
       return bloomFilter;
    }

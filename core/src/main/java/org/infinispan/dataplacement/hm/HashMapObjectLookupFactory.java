@@ -21,7 +21,7 @@ public class HashMapObjectLookupFactory implements ObjectLookupFactory {
    }
 
    @Override
-   public ObjectLookup createObjectLookup(Map<Object, OwnersInfo> keysToMove, int numberOfOwners) {
+   public ObjectLookup createObjectLookup(Map<Object, OwnersInfo> keysToMove, int numberOfOwners, int epoch) {
       return new HashMapObjectLookup(keysToMove);
    }
 
