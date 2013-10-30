@@ -400,4 +400,12 @@ public class RpcManagerImpl implements RpcManager {
    public Address getAddress() {
       return t != null ? t.getAddress() : null;
    }
+   
+   
+   @ManagedAttribute(description = "Number of nodes in the cluster")
+   @Metric(displayName = "No. of nodes")
+   public long getNumNodes() {
+	   List<Address> members = t.getMembers();
+	   return members.isEmpty() ? 1 : members.size();
+   }
 }

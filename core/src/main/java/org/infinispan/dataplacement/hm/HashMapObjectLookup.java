@@ -17,6 +17,7 @@ import java.util.Map;
 public class HashMapObjectLookup implements ObjectLookup {
 
    private final Map<Object, List<Integer>> lookup;
+   private int epoch;
 
    public HashMapObjectLookup(Map<Object, OwnersInfo> keysToMove) {
       lookup = new HashMap<Object, List<Integer>>();
@@ -42,5 +43,10 @@ public class HashMapObjectLookup implements ObjectLookup {
       }
 
       return result;
+   }
+
+   @Override
+   public int getEpoch() {
+	   return epoch;
    }
 }

@@ -43,7 +43,7 @@ public class BloomierFilterObjectLookupFactory implements ObjectLookupFactory {
 
    @SuppressWarnings("unchecked")
    @Override
-   public ObjectLookup createObjectLookup(Map<Object, OwnersInfo> keysToMove, int numberOfOwners) {
+   public ObjectLookup createObjectLookup(Map<Object, OwnersInfo> keysToMove, int numberOfOwners, int epoch) {
       ImmutableBloomierFilter[] bloomierFilters = new ImmutableBloomierFilter[numberOfOwners];
       for (int i = 0; i < numberOfOwners; ++i) {
          Map<Object, Integer> map = split(keysToMove, i);
@@ -53,7 +53,7 @@ public class BloomierFilterObjectLookupFactory implements ObjectLookupFactory {
             return null;
          }
       }
-      return new BloomierFilterObjectLookup(bloomierFilters);
+      return new BloomierFilterObjectLookup(bloomierFilters,epoch);
    }
 
    @Override
