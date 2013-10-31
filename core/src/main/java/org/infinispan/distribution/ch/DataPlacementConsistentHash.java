@@ -3,6 +3,9 @@ package org.infinispan.distribution.ch;
 import org.infinispan.dataplacement.ClusterSnapshot;
 import org.infinispan.dataplacement.lookup.ObjectLookup;
 import org.infinispan.remoting.transport.Address;
+import org.infinispan.statetransfer.DistributedStateTransferManagerImpl;
+import org.infinispan.util.logging.Log;
+import org.infinispan.util.logging.LogFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,6 +23,7 @@ import java.util.Set;
  * @since 5.2
  */
 public class DataPlacementConsistentHash extends AbstractConsistentHash {
+	private static final Log log = LogFactory.getLog(DataPlacementConsistentHash.class);
 
    private ConsistentHash defaultConsistentHash;
    private final ArrayList<ObjectLookup>[] objectsLookup;
@@ -43,11 +47,14 @@ public class DataPlacementConsistentHash extends AbstractConsistentHash {
       if(lst == null) {
     	  objectsLookup[index] = new ArrayList<ObjectLookup>();
     	  objectsLookup[index].add(objectLookup);
+    	  log.info("added FIRST object lookup for index=" + index);
       }else {
     	  if(objectLookup.getEpoch() == lst.get(0).getEpoch()) {
     		  lst.set(0, objectLookup);
+    		  log.info("set object lookup for index=" + index);
     	  }else {
     		  lst.add(0, objectLookup);
+    		  log.info("added NEW object lookup for index=" + index);
     	  }
       }
    }
