@@ -26,13 +26,16 @@ public class DataPlacementConsistentHash extends AbstractConsistentHash {
 	private static final Log log = LogFactory.getLog(DataPlacementConsistentHash.class);
 
    private ConsistentHash defaultConsistentHash;
-   private final ArrayList<ObjectLookup>[] objectsLookup;
+   private final ArrayList<ArrayList<ObjectLookup>> objectsLookup;
    private final ClusterSnapshot clusterSnapshot;
 
    @SuppressWarnings("unchecked")
    public DataPlacementConsistentHash(ClusterSnapshot clusterSnapshot) {
       this.clusterSnapshot = clusterSnapshot;
-      objectsLookup = new ArrayList[clusterSnapshot.size()];
+      objectsLookup = new ArrayList<ArrayList<ObjectLookup>>();
+      for(int i = 0; i < clusterSnapshot.size(); i++) {
+    	  objectsLookup.add(new ArrayList<ObjectLookup>());
+      }
    }
 
    public void addObjectLookup(Address address, ObjectLookup objectLookup) {
@@ -43,10 +46,9 @@ public class DataPlacementConsistentHash extends AbstractConsistentHash {
       if (index == -1) {
          return;
       }
-      ArrayList<ObjectLookup> lst = objectsLookup[index];
-      if(lst == null) {
-    	  objectsLookup[index] = new ArrayList<ObjectLookup>();
-    	  objectsLookup[index].add(objectLookup);
+      ArrayList<ObjectLookup> lst = objectsLookup.get(index);
+      if(lst.isEmpty()) {
+    	  lst.add(objectLookup);
     	  log.info("added FIRST object lookup for index=" + index);
       }else {
     	  if(objectLookup.getEpoch() == lst.get(0).getEpoch()) {
@@ -78,7 +80,7 @@ public class DataPlacementConsistentHash extends AbstractConsistentHash {
          return defaultOwners;
       }
 
-      List<ObjectLookup> lookup = objectsLookup[primaryOwnerIndex];
+      List<ObjectLookup> lookup = objectsLookup.get(primaryOwnerIndex);
 
       
       if (lookup == null) {
@@ -119,5 +121,14 @@ public class DataPlacementConsistentHash extends AbstractConsistentHash {
 
    public ConsistentHash getDefaultHash() {
       return defaultConsistentHash;
+   }
+   
+   public String toString() {
+	   return "DataPlacementConsistentHash{" +
+	            "hashcode=" + this.hashCode() +
+	            ", defaultConsistentHash=" + defaultConsistentHash +
+	            ", clusterSnapshot=" + clusterSnapshot +
+	            ", objectsLookup=" + objectsLookup +
+	            '}';
    }
 }
