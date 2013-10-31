@@ -49,14 +49,14 @@ public class DataPlacementConsistentHash extends AbstractConsistentHash {
       ArrayList<ObjectLookup> lst = objectsLookup.get(index);
       if(lst.isEmpty()) {
     	  lst.add(objectLookup);
-    	  log.info("added FIRST object lookup for index=" + index);
+    	  log.info("added FIRST object lookup for index=" + index + " for " + this);
       }else {
     	  if(objectLookup.getEpoch() == lst.get(0).getEpoch()) {
     		  lst.set(0, objectLookup);
-    		  log.info("set object lookup for index=" + index);
+    		  log.info("set object lookup for index=" + index + " for " + this);
     	  }else {
     		  lst.add(0, objectLookup);
-    		  log.info("added NEW object lookup for index=" + index);
+    		  log.info("added NEW object lookup for index=" + index + " for " + this);
     	  }
       }
    }
