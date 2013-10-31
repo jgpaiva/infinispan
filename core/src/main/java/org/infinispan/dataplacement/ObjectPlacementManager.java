@@ -1,20 +1,22 @@
 package org.infinispan.dataplacement;
 
-import org.infinispan.commons.hash.Hash;
-import org.infinispan.distribution.DistributionManager;
-import org.infinispan.distribution.ch.ConsistentHash;
-import org.infinispan.distribution.ch.DataPlacementConsistentHash;
-import org.infinispan.remoting.transport.Address;
-import org.infinispan.util.logging.Log;
-import org.infinispan.util.logging.LogFactory;
-
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
+
+import org.infinispan.commons.hash.Hash;
+import org.infinispan.dataplacement.util.Pair;
+import org.infinispan.distribution.DistributionManager;
+import org.infinispan.distribution.ch.ConsistentHash;
+import org.infinispan.distribution.ch.DataPlacementConsistentHash;
+import org.infinispan.remoting.transport.Address;
+import org.infinispan.util.logging.Log;
+import org.infinispan.util.logging.LogFactory;
 
 /**
  * Collects all the remote and local access for each member for the key in which this member is the 
@@ -41,6 +43,8 @@ public class ObjectPlacementManager {
    private final DistributionManager distributionManager;
    private final Hash hash;
    private final int defaultNumberOfOwners;
+   
+   private long lastTotalRequests;
 
    public ObjectPlacementManager(DistributionManager distributionManager, Hash hash, int defaultNumberOfOwners){
       this.distributionManager = distributionManager;
@@ -49,6 +53,8 @@ public class ObjectPlacementManager {
 
       requestReceived = new BitSet();
       allKeysMoved = new Object[0];
+      
+      lastTotalRequests = 0;
    }
 
    /**
@@ -95,9 +101,12 @@ public class ObjectPlacementManager {
     *
     * @return  a map with the keys to be moved and the new owners
     */
-   public final synchronized Map<Object, OwnersInfo> calculateObjectsToMove() {
+   public final synchronized Pair<Map<Object, OwnersInfo>,Boolean> calculateObjectsToMove() {
       Map<Object, OwnersInfo> newOwnersMap = new HashMap<Object, OwnersInfo>();
 
+      boolean shouldIncreaseEpoch = false;
+      long totalRequests = 0;
+      
       for (int requesterIdx = 0; requesterIdx < clusterSnapshot.size(); ++requesterIdx) {
          ObjectRequest objectRequest = objectRequests[requesterIdx];
 
@@ -110,9 +119,19 @@ public class ObjectPlacementManager {
          for (Map.Entry<Object, Long> entry : requestedObjects.entrySet()) {
             calculateNewOwners(newOwnersMap, entry.getKey(), entry.getValue(), requesterIdx);
          }
+         
+         
+         for(Entry<Object, Long> entry : requestedObjects.entrySet()) {
+        	 totalRequests += entry.getValue();
+         }
+        		 
          //release memory asap
          requestedObjects.clear();
       }
+      if(totalRequests > lastTotalRequests * 1.50 && lastTotalRequests > 0) {
+     	 shouldIncreaseEpoch = true;
+      }
+      lastTotalRequests = totalRequests;
 
       removeNotMovedObjects(newOwnersMap);
 
@@ -126,7 +145,7 @@ public class ObjectPlacementManager {
       //update all the keys moved array
       allKeysMoved = newOwnersMap.keySet().toArray(new Object[newOwnersMap.size()]);
 
-      return newOwnersMap;
+      return new Pair<Map<Object, OwnersInfo>,Boolean>(newOwnersMap,shouldIncreaseEpoch);
    }
 
    /**

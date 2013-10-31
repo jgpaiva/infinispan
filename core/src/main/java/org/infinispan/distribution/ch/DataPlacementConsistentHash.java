@@ -3,7 +3,11 @@ package org.infinispan.distribution.ch;
 import org.infinispan.dataplacement.ClusterSnapshot;
 import org.infinispan.dataplacement.lookup.ObjectLookup;
 import org.infinispan.remoting.transport.Address;
+import org.infinispan.statetransfer.DistributedStateTransferManagerImpl;
+import org.infinispan.util.logging.Log;
+import org.infinispan.util.logging.LogFactory;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -19,14 +23,19 @@ import java.util.Set;
  * @since 5.2
  */
 public class DataPlacementConsistentHash extends AbstractConsistentHash {
+	private static final Log log = LogFactory.getLog(DataPlacementConsistentHash.class);
 
    private ConsistentHash defaultConsistentHash;
-   private final ObjectLookup[] objectsLookup;
+   private final ArrayList<ArrayList<ObjectLookup>> objectsLookup;
    private final ClusterSnapshot clusterSnapshot;
 
+   @SuppressWarnings("unchecked")
    public DataPlacementConsistentHash(ClusterSnapshot clusterSnapshot) {
       this.clusterSnapshot = clusterSnapshot;
-      objectsLookup = new ObjectLookup[clusterSnapshot.size()];
+      objectsLookup = new ArrayList<ArrayList<ObjectLookup>>();
+      for(int i = 0; i < clusterSnapshot.size(); i++) {
+    	  objectsLookup.add(new ArrayList<ObjectLookup>());
+      }
    }
 
    public void addObjectLookup(Address address, ObjectLookup objectLookup) {
@@ -37,7 +46,19 @@ public class DataPlacementConsistentHash extends AbstractConsistentHash {
       if (index == -1) {
          return;
       }
-      objectsLookup[index] = objectLookup;
+      ArrayList<ObjectLookup> lst = objectsLookup.get(index);
+      if(lst.isEmpty()) {
+    	  lst.add(objectLookup);
+    	  log.info("added FIRST object lookup for index=" + index + " for " + this);
+      }else {
+    	  if(objectLookup.getEpoch() == lst.get(0).getEpoch()) {
+    		  lst.set(0, objectLookup);
+    		  log.info("set object lookup for index=" + index + " for " + this);
+    	  }else {
+    		  lst.add(0, objectLookup);
+    		  log.info("added NEW object lookup for index=" + index + " for " + this);
+    	  }
+      }
    }
 
    @Override
@@ -59,28 +80,33 @@ public class DataPlacementConsistentHash extends AbstractConsistentHash {
          return defaultOwners;
       }
 
-      ObjectLookup lookup = objectsLookup[primaryOwnerIndex];
+      List<ObjectLookup> lookup = objectsLookup.get(primaryOwnerIndex);
 
+      
       if (lookup == null) {
          return defaultOwners;
       }
 
-      List<Integer> newOwners = lookup.query(key);
+      for(ObjectLookup it : lookup) {
+    	  List<Integer> newOwners = it.query(key);
+    	  
+    	  if (newOwners == null || newOwners.size() != defaultOwners.size()) {
+    	         continue;
+    	  }
 
-      if (newOwners == null || newOwners.size() != defaultOwners.size()) {
-         return defaultOwners;
+          List<Address> ownersAddress = new LinkedList<Address>();
+          for (int index : newOwners) {
+             Address owner = clusterSnapshot.get(index);
+             if (owner == null) {
+                return defaultOwners;
+             }
+             ownersAddress.add(owner);
+          }
+
+          return ownersAddress;
       }
-
-      List<Address> ownersAddress = new LinkedList<Address>();
-      for (int index : newOwners) {
-         Address owner = clusterSnapshot.get(index);
-         if (owner == null) {
-            return defaultOwners;
-         }
-         ownersAddress.add(owner);
-      }
-
-      return ownersAddress;
+      
+      return defaultOwners;
    }
 
    @Override
@@ -95,5 +121,14 @@ public class DataPlacementConsistentHash extends AbstractConsistentHash {
 
    public ConsistentHash getDefaultHash() {
       return defaultConsistentHash;
+   }
+   
+   public String toString() {
+	   return "DataPlacementConsistentHash{" +
+	            "hashcode=" + this.hashCode() +
+	            ", defaultConsistentHash=" + defaultConsistentHash +
+	            ", clusterSnapshot=" + clusterSnapshot +
+	            ", objectsLookup=" + objectsLookup +
+	            '}';
    }
 }

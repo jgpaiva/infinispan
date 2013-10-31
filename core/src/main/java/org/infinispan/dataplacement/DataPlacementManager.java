@@ -13,6 +13,7 @@ import org.infinispan.dataplacement.stats.CheckKeysMovedTask;
 import org.infinispan.dataplacement.stats.ObjectLookupTask;
 import org.infinispan.dataplacement.stats.SaveStatsTask;
 import org.infinispan.dataplacement.stats.Stats;
+import org.infinispan.dataplacement.util.Pair;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.jmx.annotations.MBean;
@@ -73,11 +74,14 @@ public class DataPlacementManager {
 
    private final RoundManager roundManager;
    private final ExecutorService statsAsync = Executors.newSingleThreadExecutor();
+   
+   private int currentEpoch;
 
    private Stats stats;
 
    public DataPlacementManager() {
       roundManager = new RoundManager(INITIAL_COOL_DOWN_TIME);
+      currentEpoch = 0;
    }
 
    @Inject
@@ -180,7 +184,14 @@ public class DataPlacementManager {
 
       if(objectPlacementManager.aggregateRequest(sender, objectRequest)){
          stats.receivedAccesses();
-         Map<Object, OwnersInfo> objectsToMove = objectPlacementManager.calculateObjectsToMove();
+         Pair<Map<Object, OwnersInfo>, Boolean> res = objectPlacementManager.calculateObjectsToMove();
+         Map<Object, OwnersInfo> objectsToMove = res.getFst();
+         Boolean shouldIncreaseEpoch = res.getSnd();
+         
+         if(shouldIncreaseEpoch) {
+        	 currentEpoch++;
+        	 log.infof("increased epoch to" + currentEpoch);
+         }
 
          if (log.isTraceEnabled()) {
             log.tracef("All keys request list received. Object to move are " + objectsToMove);
@@ -189,7 +200,7 @@ public class DataPlacementManager {
          saveObjectsToMoveToFile(objectsToMove);
 
          long start = System.nanoTime();
-         ObjectLookup objectLookup = objectLookupFactory.createObjectLookup(objectsToMove, defaultNumberOfOwners);
+         ObjectLookup objectLookup = objectLookupFactory.createObjectLookup(objectsToMove, defaultNumberOfOwners, currentEpoch);
 
          if (objectLookup == null) {
             log.errorf("Object lookup created is null");

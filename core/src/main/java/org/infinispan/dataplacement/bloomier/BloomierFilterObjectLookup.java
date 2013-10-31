@@ -16,9 +16,11 @@ import java.util.List;
 public class BloomierFilterObjectLookup implements ObjectLookup {
 
    private final ImmutableBloomierFilter<Object, Integer>[] bloomierFilters;
+   private int epoch;
 
-   public BloomierFilterObjectLookup(ImmutableBloomierFilter<Object, Integer>[] bloomierFilters) {
+   public BloomierFilterObjectLookup(ImmutableBloomierFilter<Object, Integer>[] bloomierFilters,int epoch) {
       this.bloomierFilters = bloomierFilters;
+      this.epoch = epoch;
    }
 
    @Override
@@ -42,5 +44,10 @@ public class BloomierFilterObjectLookup implements ObjectLookup {
       }
       phaseDurations[0].add(System.nanoTime() - start);
       return newOwners;
+   }
+
+   @Override
+   public int getEpoch() {
+	   return epoch;
    }
 }

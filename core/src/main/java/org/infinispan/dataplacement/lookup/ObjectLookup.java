@@ -30,4 +30,6 @@ public interface ObjectLookup extends Serializable {
     * @return                 the owners index where the key is or null if the key was not moved
     */
    List<Integer> queryWithProfiling(Object key, IncrementableLong[] phaseDurations);
+   
+   int getEpoch();
 }

@@ -27,7 +27,7 @@ public interface ObjectLookupFactory {
     * @param numberOfOwners   the number of owners (a.k.a. replication degree)
     * @return                 the object lookup or null if it is not possible to create it    
     */
-   ObjectLookup createObjectLookup(Map<Object, OwnersInfo> keysToMove, int numberOfOwners);
+   ObjectLookup createObjectLookup(Map<Object, OwnersInfo> keysToMove, int numberOfOwners, int epoch);
 
    /**
     * init the object lookup
