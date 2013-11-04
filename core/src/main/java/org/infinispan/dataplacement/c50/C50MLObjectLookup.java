@@ -1,5 +1,9 @@
 package org.infinispan.dataplacement.c50;
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
 import org.infinispan.dataplacement.c50.keyfeature.Feature;
 import org.infinispan.dataplacement.c50.keyfeature.FeatureValue;
 import org.infinispan.dataplacement.c50.keyfeature.KeyFeatureManager;
@@ -7,10 +11,6 @@ import org.infinispan.dataplacement.c50.lookup.BloomFilter;
 import org.infinispan.dataplacement.c50.tree.DecisionTree;
 import org.infinispan.dataplacement.lookup.ObjectLookup;
 import org.infinispan.dataplacement.stats.IncrementableLong;
-
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * the object lookup implementation for the Bloom Filter + Machine Learner technique
@@ -101,5 +101,13 @@ public class C50MLObjectLookup implements ObjectLookup {
 
          return owners;
       }
+   }
+   
+   public String toString() {
+	   return "C50MLObjectLookup{" +
+			   "epoch=" +epoch+
+			   "bloomFilter="+bloomFilter+
+			   "decisionTreeArray="+decisionTreeArray+
+			   "}";
    }
 }

@@ -25,7 +25,7 @@ public class DataPlacementConsistentHash extends AbstractConsistentHash {
 	private static final Log log = LogFactory.getLog(DataPlacementConsistentHash.class);
 
    private ConsistentHash defaultConsistentHash;
-   private final ArrayList<ArrayList<ObjectLookup>> objectsLookup;
+   private static ArrayList<ArrayList<ObjectLookup>> objectsLookup;
    private final ClusterSnapshot clusterSnapshot;
 
    @SuppressWarnings("unchecked")
