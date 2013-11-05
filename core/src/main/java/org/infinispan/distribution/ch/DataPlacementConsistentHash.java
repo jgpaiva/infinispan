@@ -31,9 +31,11 @@ public class DataPlacementConsistentHash extends AbstractConsistentHash {
    @SuppressWarnings("unchecked")
    public DataPlacementConsistentHash(ClusterSnapshot clusterSnapshot) {
       this.clusterSnapshot = clusterSnapshot;
-      objectsLookup = new ArrayList<ArrayList<ObjectLookup>>();
-      for(int i = 0; i < clusterSnapshot.size(); i++) {
-    	  objectsLookup.add(new ArrayList<ObjectLookup>());
+      if(objectsLookup == null || objectsLookup.size() != clusterSnapshot.size()) {
+	      objectsLookup = new ArrayList<ArrayList<ObjectLookup>>();
+	      for(int i = 0; i < clusterSnapshot.size(); i++) {
+	    	  objectsLookup.add(new ArrayList<ObjectLookup>());
+	      }
       }
    }
 
