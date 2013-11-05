@@ -57,7 +57,7 @@ public class DataPlacementConsistentHash extends AbstractConsistentHash {
     		  log.info("set object lookup for index=" + index + " for " + this);
     	  }else {
     		  lst.add(0, objectLookup);
-    		  log.info("added NEW object lookup for index=" + index + " for " + this);
+    		  log.info("added NEW object lookup for index=" + index + ", has " + lst.size() + "entries for " + this);
     	  }
       }
    }
@@ -128,8 +128,7 @@ public class DataPlacementConsistentHash extends AbstractConsistentHash {
 	   return "DataPlacementConsistentHash{" +
 	            "hashcode=" + this.hashCode() +
 	            ", defaultConsistentHash=" + defaultConsistentHash +
-	            ", clusterSnapshot=" + clusterSnapshot +
-	            ", objectsLookup=" + objectsLookup +
+	            ", objectsLookup.size()=" + (objectsLookup!=null?objectsLookup.size():null) +
 	            '}';
    }
 }
