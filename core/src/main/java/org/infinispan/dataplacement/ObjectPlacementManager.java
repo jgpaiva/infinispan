@@ -128,7 +128,7 @@ public class ObjectPlacementManager {
          //release memory asap
          requestedObjects.clear();
       }
-      if(totalRequests > lastTotalRequests * 1.70 && lastTotalRequests > 1000) { //XXX: improve detection
+      if(totalRequests > lastTotalRequests * 1.70 && totalRequests > 1000) { //XXX: improve detection
      	 shouldIncreaseEpoch = true;
       }
       lastTotalRequests = totalRequests;
