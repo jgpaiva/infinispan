@@ -130,6 +130,7 @@ public class ObjectPlacementManager {
       }
       if(totalRequests > lastTotalRequests * 1.70 && totalRequests > 1000) { //XXX: improve detection
      	 shouldIncreaseEpoch = true;
+     	 allKeysMoved = new Object[0];
       }
       lastTotalRequests = totalRequests;
 
