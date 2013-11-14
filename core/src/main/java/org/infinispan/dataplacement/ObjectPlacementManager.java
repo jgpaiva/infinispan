@@ -5,12 +5,15 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Queue;
 import java.util.TreeMap;
 
 import org.infinispan.commons.hash.Hash;
 import org.infinispan.dataplacement.util.Pair;
+import org.infinispan.dataplacement.util.Utils;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.distribution.ch.DataPlacementConsistentHash;
@@ -44,7 +47,7 @@ public class ObjectPlacementManager {
    private final Hash hash;
    private final int defaultNumberOfOwners;
    
-   private long lastTotalRequests;
+   private final Queue<Long> totalRequestsHistory;
 
    public ObjectPlacementManager(DistributionManager distributionManager, Hash hash, int defaultNumberOfOwners){
       this.distributionManager = distributionManager;
@@ -54,7 +57,7 @@ public class ObjectPlacementManager {
       requestReceived = new BitSet();
       allKeysMoved = new Object[0];
       
-      lastTotalRequests = 0;
+      totalRequestsHistory = new LinkedList<Long>();
    }
 
    /**
@@ -128,11 +131,23 @@ public class ObjectPlacementManager {
          //release memory asap
          requestedObjects.clear();
       }
-      if(totalRequests > lastTotalRequests * 1.70 && totalRequests > 1000) { //XXX: improve detection
-     	 shouldIncreaseEpoch = true;
-     	 allKeysMoved = new Object[0];
+
+      if(totalRequestsHistory.size() == 0) { //bootstrap
+          shouldIncreaseEpoch = true;
+          allKeysMoved = new Object[0];
+      }else if(totalRequestsHistory.size() == 10) {
+          long avg = Utils.average(totalRequestsHistory);
+          if(totalRequests > avg * 1.70) { //XXX: improve detection
+              shouldIncreaseEpoch = true;
+              allKeysMoved = new Object[0];
+          }
       }
-      lastTotalRequests = totalRequests;
+
+      totalRequestsHistory.add(totalRequests);
+
+      while(totalRequestsHistory.size() > 10) {
+          totalRequestsHistory.poll();
+      }
 
       removeNotMovedObjects(newOwnersMap);
 
