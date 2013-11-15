@@ -109,6 +109,7 @@ public class ObjectPlacementManager {
 
       boolean shouldIncreaseEpoch = false;
       long totalRequests = 0;
+      long test = 0;
       
       for (int requesterIdx = 0; requesterIdx < clusterSnapshot.size(); ++requesterIdx) {
          ObjectRequest objectRequest = objectRequests[requesterIdx];
@@ -126,6 +127,7 @@ public class ObjectPlacementManager {
          
          for(Entry<Object, Long> entry : requestedObjects.entrySet()) {
         	 totalRequests += entry.getValue();
+        	 test +=1;
          }
         		 
          //release memory asap
@@ -141,7 +143,7 @@ public class ObjectPlacementManager {
           }
       }
 
-      log.info("totalRequests: " + totalRequests);
+      log.info("totalRequests: " + totalRequests + " test:" + test);
 
       totalRequestsHistory.add(totalRequests);
 
