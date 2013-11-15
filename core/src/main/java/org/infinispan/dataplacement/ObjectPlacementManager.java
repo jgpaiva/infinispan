@@ -134,19 +134,24 @@ public class ObjectPlacementManager {
 
       if(totalRequestsHistory.size() == 0) { //bootstrap
           shouldIncreaseEpoch = true;
-          allKeysMoved = new Object[0];
       }else if(totalRequestsHistory.size() == 10) {
           long avg = Utils.average(totalRequestsHistory);
           if(totalRequests > avg * 1.70) { //XXX: improve detection
               shouldIncreaseEpoch = true;
-              allKeysMoved = new Object[0];
           }
       }
+
+      log.info("totalRequests: " + totalRequests);
 
       totalRequestsHistory.add(totalRequests);
 
       while(totalRequestsHistory.size() > 10) {
           totalRequestsHistory.poll();
+      }
+
+      if(shouldIncreaseEpoch){
+          allKeysMoved = new Object[0];
+          log.info("increasing epoch. history: " + totalRequestsHistory);
       }
 
       removeNotMovedObjects(newOwnersMap);
