@@ -190,7 +190,7 @@ public class DataPlacementManager {
          
          if(shouldIncreaseEpoch) {
         	 currentEpoch++;
-        	 log.infof("increased epoch to" + currentEpoch);
+        	 log.infof("increased epoch to " + currentEpoch);
          }
 
          if (log.isTraceEnabled()) {
