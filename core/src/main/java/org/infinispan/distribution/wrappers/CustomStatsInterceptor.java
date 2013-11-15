@@ -1,5 +1,8 @@
 package org.infinispan.distribution.wrappers;
 
+import java.lang.reflect.Field;
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.infinispan.commands.read.GetKeyValueCommand;
 import org.infinispan.commands.tx.CommitCommand;
 import org.infinispan.commands.tx.PrepareCommand;
@@ -33,8 +36,6 @@ import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 import org.rhq.helpers.pluginAnnotations.agent.Metric;
 import org.rhq.helpers.pluginAnnotations.agent.Operation;
-
-import java.lang.reflect.Field;
 
 /**
  * Massive hack for a noble cause!
@@ -581,10 +582,14 @@ public abstract class CustomStatsInterceptor extends BaseCustomInterceptor {
       return (Double)TransactionsStatisticsRegistry.getAttribute(IspnStats.THROUGHPUT);
    }
 
+   public static AtomicLong avgGetsPerROTransaction = new AtomicLong(0L);
+   
    @ManagedAttribute(description = "Average number of get operations per (local) read-only transaction")
    @Operation(displayName = "Average number of get operations per (local) read-only transaction")
    public long getAvgGetsPerROTransaction(){
-      return (Long)TransactionsStatisticsRegistry.getAttribute(IspnStats.NUM_SUCCESSFUL_GETS_RO_TX);
+       long val = (Long)TransactionsStatisticsRegistry.getAttribute(IspnStats.NUM_SUCCESSFUL_GETS_RO_TX); 
+       avgGetsPerROTransaction.addAndGet(val);
+       return val;
    }
 
    @ManagedAttribute(description = "Average number of get operations per (local) read-write transaction")

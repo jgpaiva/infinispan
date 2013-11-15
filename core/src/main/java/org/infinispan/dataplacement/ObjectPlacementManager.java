@@ -17,6 +17,7 @@ import org.infinispan.dataplacement.util.Utils;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.distribution.ch.DataPlacementConsistentHash;
+import org.infinispan.distribution.wrappers.CustomStatsInterceptor;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
@@ -108,8 +109,6 @@ public class ObjectPlacementManager {
       Map<Object, OwnersInfo> newOwnersMap = new HashMap<Object, OwnersInfo>();
 
       boolean shouldIncreaseEpoch = false;
-      long totalRequests = 0;
-      long test = 0;
       
       for (int requesterIdx = 0; requesterIdx < clusterSnapshot.size(); ++requesterIdx) {
          ObjectRequest objectRequest = objectRequests[requesterIdx];
@@ -123,17 +122,13 @@ public class ObjectPlacementManager {
          for (Map.Entry<Object, Long> entry : requestedObjects.entrySet()) {
             calculateNewOwners(newOwnersMap, entry.getKey(), entry.getValue(), requesterIdx);
          }
-         
-         
-         for(Entry<Object, Long> entry : requestedObjects.entrySet()) {
-        	 totalRequests += entry.getValue();
-        	 test +=1;
-         }
         		 
          //release memory asap
          requestedObjects.clear();
       }
 
+      long totalRequests = CustomStatsInterceptor.avgGetsPerROTransaction.getAndSet(0L);
+      
       if(totalRequestsHistory.size() == 0) { //bootstrap
           shouldIncreaseEpoch = true;
       }else if(totalRequestsHistory.size() == 10) {
@@ -143,7 +138,7 @@ public class ObjectPlacementManager {
           }
       }
 
-      log.info("totalRequests: " + totalRequests + " test:" + test);
+      log.info("totalRequests: " + totalRequests);
 
       totalRequestsHistory.add(totalRequests);
 
