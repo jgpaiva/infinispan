@@ -582,14 +582,10 @@ public abstract class CustomStatsInterceptor extends BaseCustomInterceptor {
       return (Double)TransactionsStatisticsRegistry.getAttribute(IspnStats.THROUGHPUT);
    }
 
-   public static AtomicLong avgGetsPerROTransaction = new AtomicLong(0L);
-   
    @ManagedAttribute(description = "Average number of get operations per (local) read-only transaction")
    @Operation(displayName = "Average number of get operations per (local) read-only transaction")
    public long getAvgGetsPerROTransaction(){
-       long val = (Long)TransactionsStatisticsRegistry.getAttribute(IspnStats.NUM_SUCCESSFUL_GETS_RO_TX); 
-       avgGetsPerROTransaction.addAndGet(val);
-       return val;
+       return (Long)TransactionsStatisticsRegistry.getAttribute(IspnStats.NUM_SUCCESSFUL_GETS_RO_TX); 
    }
 
    @ManagedAttribute(description = "Average number of get operations per (local) read-write transaction")
@@ -601,13 +597,17 @@ public abstract class CustomStatsInterceptor extends BaseCustomInterceptor {
    @ManagedAttribute(description = "Average number of remote get operations per (local) read-write transaction")
    @Operation(displayName = "Average number of remote get operations per (local) read-write transaction")
    public long getAvgRemoteGetsPerWrTransaction(){
-      return (Long)TransactionsStatisticsRegistry.getAttribute(IspnStats.NUM_SUCCESSFUL_REMOTE_GETS_WR_TX);
+       return (Long)TransactionsStatisticsRegistry.getAttribute(IspnStats.NUM_SUCCESSFUL_REMOTE_GETS_WR_TX);
    }
 
+   public static AtomicLong avgRemoteGetsPerROTransaction = new AtomicLong(0L);
+   
    @ManagedAttribute(description = "Average number of remote get operations per (local) read-only transaction")
    @Operation(displayName = "Average number of remote get operations per (local) read-only transaction")
    public long getAvgRemoteGetsPerROTransaction(){
-      return (Long)TransactionsStatisticsRegistry.getAttribute(IspnStats.NUM_SUCCESSFUL_REMOTE_GETS_RO_TX);
+      Long val = (Long)TransactionsStatisticsRegistry.getAttribute(IspnStats.NUM_SUCCESSFUL_REMOTE_GETS_RO_TX);
+      avgRemoteGetsPerROTransaction.addAndGet(val);
+      return val;
    }
 
    @ManagedAttribute(description = "Average cost of a remote get")
@@ -705,5 +705,4 @@ public abstract class CustomStatsInterceptor extends BaseCustomInterceptor {
    public void resetStatistics(){
       TransactionsStatisticsRegistry.reset();
    }
-
 }

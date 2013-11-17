@@ -127,7 +127,7 @@ public class ObjectPlacementManager {
          requestedObjects.clear();
       }
 
-      long totalRequests = CustomStatsInterceptor.avgGetsPerROTransaction.getAndSet(0L);
+      long totalRequests = CustomStatsInterceptor.avgRemoteGetsPerROTransaction.getAndSet(0L);
       
       if(totalRequestsHistory.size() == 0) { //bootstrap
           shouldIncreaseEpoch = true;
