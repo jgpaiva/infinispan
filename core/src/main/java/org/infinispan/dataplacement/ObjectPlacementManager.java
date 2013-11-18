@@ -142,13 +142,14 @@ public class ObjectPlacementManager {
 
       totalRequestsHistory.add(totalRequests);
 
-      while(totalRequestsHistory.size() > 10) {
-          totalRequestsHistory.poll();
-      }
-
       if(shouldIncreaseEpoch){
           allKeysMoved = new Object[0];
+          totalRequestsHistory.clear();
           log.info("increasing epoch. history: " + totalRequestsHistory);
+      }
+      
+      while(totalRequestsHistory.size() > 10) {
+          totalRequestsHistory.poll();
       }
 
       removeNotMovedObjects(newOwnersMap);
