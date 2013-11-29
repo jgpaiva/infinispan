@@ -126,7 +126,7 @@ public class ObjectPlacementManager {
          //release memory asap
          requestedObjects.clear();
       }
-
+ 
       long totalRequests = CustomStatsInterceptor.avgRemoteGetsPerROTransaction.getAndSet(0L);
       
       if(totalRequestsHistory.size() == 0) { //bootstrap
@@ -140,13 +140,12 @@ public class ObjectPlacementManager {
 
       log.info("totalRequests: " + totalRequests);
 
-      totalRequestsHistory.add(totalRequests);
-
       if(shouldIncreaseEpoch){
           allKeysMoved = new Object[0];
           totalRequestsHistory.clear();
-          log.info("increasing epoch. history: " + totalRequestsHistory);
       }
+
+      totalRequestsHistory.add(totalRequests);
       
       while(totalRequestsHistory.size() > 10) {
           totalRequestsHistory.poll();
