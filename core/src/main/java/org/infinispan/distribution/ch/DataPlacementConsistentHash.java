@@ -1,13 +1,12 @@
 package org.infinispan.distribution.ch;
 
-import org.infinispan.dataplacement.ClusterSnapshot;
-import org.infinispan.dataplacement.lookup.ObjectLookup;
-import org.infinispan.remoting.transport.Address;
-
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+
+import org.infinispan.dataplacement.ClusterSnapshot;
+import org.infinispan.dataplacement.lookup.ObjectReplicationLookup;
+import org.infinispan.remoting.transport.Address;
 
 /**
  * The consistent hash function implementation that the Object Lookup implementations from the Data Placement 
@@ -21,15 +20,15 @@ import java.util.Set;
 public class DataPlacementConsistentHash extends AbstractConsistentHash {
 
    private ConsistentHash defaultConsistentHash;
-   private final ObjectLookup[] objectsLookup;
+   private final ObjectReplicationLookup[] objectsReplicationLookup;
    private final ClusterSnapshot clusterSnapshot;
 
    public DataPlacementConsistentHash(ClusterSnapshot clusterSnapshot) {
       this.clusterSnapshot = clusterSnapshot;
-      objectsLookup = new ObjectLookup[clusterSnapshot.size()];
+      objectsReplicationLookup = new ObjectReplicationLookup[clusterSnapshot.size()];
    }
 
-   public void addObjectLookup(Address address, ObjectLookup objectLookup) {
+   public void addObjectReplicationLookup(Address address, ObjectReplicationLookup objectLookup) {
       if (objectLookup == null) {
          return;
       }
@@ -37,7 +36,7 @@ public class DataPlacementConsistentHash extends AbstractConsistentHash {
       if (index == -1) {
          return;
       }
-      objectsLookup[index] = objectLookup;
+      objectsReplicationLookup[index] = objectLookup;
    }
 
    @Override
@@ -59,28 +58,20 @@ public class DataPlacementConsistentHash extends AbstractConsistentHash {
          return defaultOwners;
       }
 
-      ObjectLookup lookup = objectsLookup[primaryOwnerIndex];
+      ObjectReplicationLookup lookup = objectsReplicationLookup[primaryOwnerIndex];
 
       if (lookup == null) {
          return defaultOwners;
       }
 
-      List<Integer> newOwners = lookup.query(key);
+      Integer newReplication = lookup.query(key);
 
-      if (newOwners == null || newOwners.size() != defaultOwners.size()) {
+      if (newReplication == null) {
          return defaultOwners;
       }
 
-      List<Address> ownersAddress = new LinkedList<Address>();
-      for (int index : newOwners) {
-         Address owner = clusterSnapshot.get(index);
-         if (owner == null) {
-            return defaultOwners;
-         }
-         ownersAddress.add(owner);
-      }
-
-      return ownersAddress;
+      List<Address> newOwners = defaultConsistentHash.locate(key, newReplication);
+      return newOwners;
    }
 
    @Override

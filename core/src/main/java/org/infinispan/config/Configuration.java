@@ -22,15 +22,61 @@
  */
 package org.infinispan.config;
 
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.infinispan.config.Configuration.CacheMode.DIST_ASYNC;
+import static org.infinispan.config.Configuration.CacheMode.DIST_SYNC;
+import static org.infinispan.config.Configuration.CacheMode.INVALIDATION_ASYNC;
+import static org.infinispan.config.Configuration.CacheMode.INVALIDATION_SYNC;
+import static org.infinispan.config.Configuration.CacheMode.LOCAL;
+import static org.infinispan.config.Configuration.CacheMode.REPL_ASYNC;
+import static org.infinispan.config.Configuration.CacheMode.REPL_SYNC;
+
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.XmlAdapter;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
 import org.infinispan.CacheException;
 import org.infinispan.commons.hash.Hash;
 import org.infinispan.commons.hash.MurmurHash3;
-import org.infinispan.config.FluentConfiguration.*;
+import org.infinispan.config.FluentConfiguration.AsyncConfig;
+import org.infinispan.config.FluentConfiguration.ClusteringConfig;
+import org.infinispan.config.FluentConfiguration.CustomInterceptorPosition;
+import org.infinispan.config.FluentConfiguration.CustomInterceptorsConfig;
+import org.infinispan.config.FluentConfiguration.DataContainerConfig;
+import org.infinispan.config.FluentConfiguration.DataPlacementConfig;
+import org.infinispan.config.FluentConfiguration.DeadlockDetectionConfig;
+import org.infinispan.config.FluentConfiguration.EvictionConfig;
+import org.infinispan.config.FluentConfiguration.ExpirationConfig;
+import org.infinispan.config.FluentConfiguration.HashConfig;
+import org.infinispan.config.FluentConfiguration.IndexingConfig;
+import org.infinispan.config.FluentConfiguration.InvocationBatchingConfig;
+import org.infinispan.config.FluentConfiguration.JmxStatisticsConfig;
+import org.infinispan.config.FluentConfiguration.L1Config;
+import org.infinispan.config.FluentConfiguration.LockingConfig;
+import org.infinispan.config.FluentConfiguration.RecoveryConfig;
+import org.infinispan.config.FluentConfiguration.StateRetrievalConfig;
+import org.infinispan.config.FluentConfiguration.StoreAsBinaryConfig;
+import org.infinispan.config.FluentConfiguration.SyncConfig;
+import org.infinispan.config.FluentConfiguration.TransactionConfig;
+import org.infinispan.config.FluentConfiguration.UnsafeConfig;
+import org.infinispan.config.FluentConfiguration.VersioningConfig;
 import org.infinispan.configuration.cache.VersioningScheme;
 import org.infinispan.container.DataContainer;
 import org.infinispan.container.DefaultDataContainer;
-import org.infinispan.dataplacement.c50.C50MLObjectLookupFactory;
-import org.infinispan.dataplacement.lookup.ObjectLookupFactory;
+import org.infinispan.dataplacement.lookup.ObjectReplicationLookupFactory;
+import org.infinispan.dataplacement.replication.HashMapObjectReplicationLookupFactory;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.distribution.ch.DefaultConsistentHash;
 import org.infinispan.distribution.ch.TopologyAwareConsistentHash;
@@ -55,24 +101,6 @@ import org.infinispan.util.Util;
 import org.infinispan.util.concurrent.IsolationLevel;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
-import static java.util.concurrent.TimeUnit.MINUTES;
-import static org.infinispan.config.Configuration.CacheMode.*;
 
 /**
  * Encapsulates the configuration of a Cache. Configures the default cache which can be retrieved via
@@ -1527,8 +1555,8 @@ public class Configuration extends AbstractNamedCacheConfigurationBean {
       return dataPlacement.enabled;
    }
 
-   public ObjectLookupFactory getObjectLookupFactory() {
-      return dataPlacement.objectLookupFactory;
+   public ObjectReplicationLookupFactory getObjectReplicationLookupFactory() {
+      return dataPlacement.objectReplicationLookupFactory;
    }
 
    public TypedProperties getDataPlacementProperties() {
@@ -4840,7 +4868,7 @@ public class Configuration extends AbstractNamedCacheConfigurationBean {
       protected boolean enabled = false;
 
       @ConfigurationDocRef(bean = Configuration.class, targetElement = "setDataPlacementObjectLookupFactory")
-      protected ObjectLookupFactory objectLookupFactory = new C50MLObjectLookupFactory();
+      protected ObjectReplicationLookupFactory objectReplicationLookupFactory = new HashMapObjectReplicationLookupFactory();
 
       @XmlElement(name = "properties")
       protected TypedProperties properties = new TypedProperties();
@@ -4882,9 +4910,9 @@ public class Configuration extends AbstractNamedCacheConfigurationBean {
       }
 
       @Override
-      public DataPlacementConfig objectLookupFactory(ObjectLookupFactory factory) {
+      public DataPlacementConfig objectLookupFactory(ObjectReplicationLookupFactory factory) {
          testImmutability("objectLookupFactory");
-         objectLookupFactory = factory;
+         objectReplicationLookupFactory = factory;
          return this;
       }
 
@@ -4921,7 +4949,7 @@ public class Configuration extends AbstractNamedCacheConfigurationBean {
          if (coolDowntime != that.coolDowntime) return false;
          if (maxNumberOfKeysToRequest != that.maxNumberOfKeysToRequest) return false;
          if (enabled != that.enabled) return false;
-         if (objectLookupFactory != null ? !objectLookupFactory.equals(that.objectLookupFactory) : that.objectLookupFactory != null)
+         if (objectReplicationLookupFactory != null ? !objectReplicationLookupFactory.equals(that.objectReplicationLookupFactory) : that.objectReplicationLookupFactory != null)
             return false;
          if (properties != null ? !properties.equals(that.properties) : that.properties != null) return false;
 
@@ -4931,7 +4959,7 @@ public class Configuration extends AbstractNamedCacheConfigurationBean {
       @Override
       public int hashCode() {
          int result = (enabled ? 1 : 0);
-         result = 31 * result + (objectLookupFactory != null ? objectLookupFactory.hashCode() : 0);
+         result = 31 * result + (objectReplicationLookupFactory != null ? objectReplicationLookupFactory.hashCode() : 0);
          result = 31 * result + (properties != null ? properties.hashCode() : 0);
          result = 31 * result + coolDowntime;
          result = 31 * result + maxNumberOfKeysToRequest;

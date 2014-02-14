@@ -1,13 +1,5 @@
 package org.infinispan.dataplacement.stats;
 
-import org.infinispan.dataplacement.OwnersInfo;
-import org.infinispan.dataplacement.c50.C50MLObjectLookup;
-import org.infinispan.dataplacement.c50.lookup.BloomFilter;
-import org.infinispan.dataplacement.c50.tree.DecisionTree;
-import org.infinispan.dataplacement.lookup.ObjectLookup;
-import org.infinispan.util.logging.Log;
-import org.infinispan.util.logging.LogFactory;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -15,6 +7,14 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+
+import org.infinispan.dataplacement.OwnersInfo;
+import org.infinispan.dataplacement.c50.C50MLObjectLookup;
+import org.infinispan.dataplacement.c50.lookup.BloomFilter;
+import org.infinispan.dataplacement.c50.tree.DecisionTree;
+import org.infinispan.dataplacement.lookup.ObjectLookup;
+import org.infinispan.util.logging.Log;
+import org.infinispan.util.logging.LogFactory;
 
 /**
  * Task that checks the number of keys that was move to a wrong node, the average query duration and the size of the

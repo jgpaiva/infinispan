@@ -1,10 +1,10 @@
 package org.infinispan.configuration.cache;
 
-import org.infinispan.config.ConfigurationException;
-import org.infinispan.dataplacement.lookup.ObjectLookupFactory;
-import org.infinispan.util.TypedProperties;
-
 import java.util.Properties;
+
+import org.infinispan.config.ConfigurationException;
+import org.infinispan.dataplacement.lookup.ObjectReplicationLookupFactory;
+import org.infinispan.util.TypedProperties;
 
 /**
  * Builds the Data Placement configuration
@@ -15,7 +15,7 @@ import java.util.Properties;
 public class DataPlacementConfigurationBuilder extends AbstractConfigurationChildBuilder<DataPlacementConfiguration> {
 
    private boolean enabled = false;
-   private ObjectLookupFactory objectLookupFactory;
+   private ObjectReplicationLookupFactory objectLookupFactory;
    private int coolDownTime = 30000; //30 seconds by default
    private int maxNumberOfKeysToRequest = 500; //500 keys by default? is too high? too low?
    private Properties properties = new Properties();
@@ -24,7 +24,7 @@ public class DataPlacementConfigurationBuilder extends AbstractConfigurationChil
       super(builder);
    }
 
-   public DataPlacementConfigurationBuilder objectLookupFactory(ObjectLookupFactory objectLookupFactory) {
+   public DataPlacementConfigurationBuilder objectReplicationLookupFactory(ObjectReplicationLookupFactory objectLookupFactory) {
       this.objectLookupFactory = objectLookupFactory;
       return this;
    }
@@ -91,7 +91,7 @@ public class DataPlacementConfigurationBuilder extends AbstractConfigurationChil
       this.enabled = template.enabled();
       this.coolDownTime = template.coolDownTime();
       this.maxNumberOfKeysToRequest = template.maxNumberOfKeysToRequest();
-      this.objectLookupFactory = template.objectLookupFactory();
+      this.objectLookupFactory = template.objectReplicationLookupFactory();
       this.properties = template.properties();
       return this;
    }

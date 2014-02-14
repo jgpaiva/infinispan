@@ -18,11 +18,16 @@
  */
 package org.infinispan.statetransfer;
 
+import static org.infinispan.context.Flag.CACHE_MODE_LOCAL;
+import static org.infinispan.context.Flag.SKIP_LOCKING;
+
+import java.util.List;
+
 import org.infinispan.CacheException;
 import org.infinispan.commands.write.InvalidateCommand;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.dataplacement.ClusterSnapshot;
-import org.infinispan.dataplacement.lookup.ObjectLookup;
+import org.infinispan.dataplacement.lookup.ObjectReplicationLookup;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.distribution.ch.ConsistentHashHelper;
@@ -34,12 +39,6 @@ import org.infinispan.remoting.transport.Address;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
-import java.util.Collection;
-import java.util.List;
-
-import static org.infinispan.context.Flag.CACHE_MODE_LOCAL;
-import static org.infinispan.context.Flag.SKIP_LOCKING;
-
 /**
  * The distributed mode implementation of {@link StateTransferManager}
  *
@@ -48,7 +47,8 @@ import static org.infinispan.context.Flag.SKIP_LOCKING;
  * @author Mircea.Markus@jboss.com
  * @author Bela Ban
  * @author Dan Berindei &lt;dan@infinispan.org&gt;
- * @author Zhongmiao Li 
+ * @author Zhongmiao Li
+ * @author João Paiva 
  * @since 4.0
  */
 @MBean(objectName = "DistributedStateTransferManager", description = "Component that handles state transfer in distributed mode")
@@ -102,7 +102,7 @@ public class DistributedStateTransferManagerImpl extends BaseStateTransferManage
       super.commitView(viewId);
    }
 
-   public void addObjectLookup(Address address, ObjectLookup objectLookup){
+   public void addObjectReplicationLookup(Address address, ObjectReplicationLookup objectLookup){
       if (dataPlacementConsistentHash == null) {
          log.errorf("Trying to add the Object Lookup from %s but the Data Placement Consistent Hash is null", address);
          return;
@@ -112,7 +112,7 @@ public class DistributedStateTransferManagerImpl extends BaseStateTransferManage
          }
       }
 
-      dataPlacementConsistentHash.addObjectLookup(address, objectLookup);
+      dataPlacementConsistentHash.addObjectReplicationLookup(address, objectLookup);
    }
 
    public void createDataPlacementConsistentHashing(ClusterSnapshot clusterSnapshot){

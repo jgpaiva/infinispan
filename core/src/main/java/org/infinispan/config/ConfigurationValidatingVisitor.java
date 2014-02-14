@@ -221,7 +221,7 @@ public class ConfigurationValidatingVisitor extends AbstractConfigurationBeanVis
    @Override
    public void visitDataPlacementType(Configuration.DataPlacementType dataPlacementType) {
       if (dataPlacementType.enabled) {
-         if (dataPlacementType.objectLookupFactory == null) {
+         if (dataPlacementType.objectReplicationLookupFactory == null) {
             throw new ConfigurationException("Expected an Object Lookup Factory instance");
          }
          if (dataPlacementType.coolDowntime < 1000) {

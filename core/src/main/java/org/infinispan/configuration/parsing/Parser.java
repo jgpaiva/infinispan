@@ -18,6 +18,27 @@
  */
 package org.infinispan.configuration.parsing;
 
+import static org.infinispan.configuration.cache.CacheMode.DIST_ASYNC;
+import static org.infinispan.configuration.cache.CacheMode.DIST_SYNC;
+import static org.infinispan.configuration.cache.CacheMode.INVALIDATION_ASYNC;
+import static org.infinispan.configuration.cache.CacheMode.INVALIDATION_SYNC;
+import static org.infinispan.configuration.cache.CacheMode.LOCAL;
+import static org.infinispan.configuration.cache.CacheMode.REPL_ASYNC;
+import static org.infinispan.configuration.cache.CacheMode.REPL_SYNC;
+
+import java.io.BufferedInputStream;
+import java.io.Closeable;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
 import org.infinispan.config.ConfigurationException;
 import org.infinispan.configuration.cache.AbstractLoaderConfigurationBuilder;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -31,7 +52,7 @@ import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.configuration.global.ShutdownHookBehavior;
 import org.infinispan.configuration.global.TransportConfigurationBuilder;
 import org.infinispan.container.DataContainer;
-import org.infinispan.dataplacement.lookup.ObjectLookupFactory;
+import org.infinispan.dataplacement.lookup.ObjectReplicationLookupFactory;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.distribution.group.Grouper;
 import org.infinispan.eviction.EvictionStrategy;
@@ -57,20 +78,6 @@ import org.infinispan.util.Util;
 import org.infinispan.util.concurrent.IsolationLevel;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
-
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import java.io.BufferedInputStream;
-import java.io.Closeable;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-
-import static org.infinispan.configuration.cache.CacheMode.*;
 
 public class Parser {
 
@@ -327,8 +334,8 @@ public class Parser {
          Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
          switch (attribute) {
             case OBJECT_LOOKUP_FACTORY:
-               ObjectLookupFactory objectLookupFactory = Util.getInstance(value, cl);
-               builder.dataPlacement().objectLookupFactory(objectLookupFactory);
+               ObjectReplicationLookupFactory objectLookupFactory = Util.getInstance(value, cl);
+               builder.dataPlacement().objectReplicationLookupFactory(objectLookupFactory);
                break;
             case ENABLED:
                if (Boolean.parseBoolean(value)) {

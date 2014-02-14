@@ -1,7 +1,7 @@
 package org.infinispan.configuration.cache;
 
 import org.infinispan.configuration.AbstractTypedPropertiesConfiguration;
-import org.infinispan.dataplacement.lookup.ObjectLookupFactory;
+import org.infinispan.dataplacement.lookup.ObjectReplicationLookupFactory;
 import org.infinispan.util.TypedProperties;
 
 /**
@@ -14,21 +14,22 @@ public class DataPlacementConfiguration extends AbstractTypedPropertiesConfigura
 
    private final boolean enabled;
    private final int coolDownTime;
-   private final ObjectLookupFactory objectLookupFactory;
+   private final ObjectReplicationLookupFactory objectReplicationLookupFactory;
    private final int maxNumberOfKeysToRequest;
 
    protected DataPlacementConfiguration(TypedProperties properties, boolean enabled, int coolDownTime,
-                                        ObjectLookupFactory objectLookupFactory, int maxNumberOfKeysToRequest) {
+		   ObjectReplicationLookupFactory objectReplicationLookupFactory, int maxNumberOfKeysToRequest) {
       super(properties);
       this.enabled = enabled;
       this.coolDownTime = coolDownTime;
-      this.objectLookupFactory = objectLookupFactory;
+      this.objectReplicationLookupFactory = objectReplicationLookupFactory;
       this.maxNumberOfKeysToRequest = maxNumberOfKeysToRequest;
    }
 
-   public ObjectLookupFactory objectLookupFactory() {
-      return objectLookupFactory;
-   }
+   
+   public ObjectReplicationLookupFactory objectReplicationLookupFactory() {
+	      return objectReplicationLookupFactory;
+}
 
    public boolean enabled() {
       return enabled;
@@ -47,7 +48,7 @@ public class DataPlacementConfiguration extends AbstractTypedPropertiesConfigura
       return "DataPlacementConfiguration{" +
             "enabled=" + enabled +
             ", coolDownTime=" + coolDownTime +
-            ", objectLookupFactory=" + objectLookupFactory +
+            ", objectReplicationLookupFactory=" + objectReplicationLookupFactory +
             ", maxNumberOfKeysToRequest=" + maxNumberOfKeysToRequest +
             '}';
    }
@@ -63,7 +64,7 @@ public class DataPlacementConfiguration extends AbstractTypedPropertiesConfigura
       if (coolDownTime != that.coolDownTime) return false;
       if (maxNumberOfKeysToRequest != that.maxNumberOfKeysToRequest) return false;
       if (enabled != that.enabled) return false;
-      if (objectLookupFactory != null ? !objectLookupFactory.equals(that.objectLookupFactory) : that.objectLookupFactory != null)
+      if (objectReplicationLookupFactory != null ? !objectReplicationLookupFactory.equals(that.objectReplicationLookupFactory) : that.objectReplicationLookupFactory != null)
          return false;
 
       return true;
@@ -75,7 +76,7 @@ public class DataPlacementConfiguration extends AbstractTypedPropertiesConfigura
       result = 31 * result + (enabled ? 1 : 0);
       result = 31 * result + coolDownTime;
       result = 31 * result + maxNumberOfKeysToRequest;
-      result = 31 * result + (objectLookupFactory != null ? objectLookupFactory.hashCode() : 0);
+      result = 31 * result + (objectReplicationLookupFactory != null ? objectReplicationLookupFactory.hashCode() : 0);
       return result;
    }
 }

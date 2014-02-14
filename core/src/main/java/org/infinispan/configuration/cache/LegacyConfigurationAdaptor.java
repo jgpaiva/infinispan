@@ -285,7 +285,7 @@ public class LegacyConfigurationAdaptor {
       if (config.dataPlacement().enabled()) {
          legacy.dataPlacement().enable()
                .coolDowntime(config.dataPlacement().coolDownTime())
-               .objectLookupFactory(config.dataPlacement().objectLookupFactory())
+               .objectLookupFactory(config.dataPlacement().objectReplicationLookupFactory())
                .withProperties(config.dataPlacement().properties())
                .maxNumberOfKeysToRequest(config.dataPlacement().maxNumberOfKeysToRequest());
       }
@@ -516,7 +516,7 @@ public class LegacyConfigurationAdaptor {
       builder.versioning().enabled(legacy.isEnableVersioning()).scheme(legacy.getVersioningScheme());
 
       builder.dataPlacement().enabled(legacy.isDataPlacementEnabled())
-            .objectLookupFactory(legacy.getObjectLookupFactory())
+            .objectReplicationLookupFactory(legacy.getObjectReplicationLookupFactory())
             .coolDownTime(legacy.getCoolDownTime())
             .withProperties(legacy.getDataPlacementProperties())
             .maxNumberOfKeysToRequest(legacy.getMaxNumberOfKeyToRequest());

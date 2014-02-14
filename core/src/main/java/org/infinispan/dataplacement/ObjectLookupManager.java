@@ -1,18 +1,19 @@
 package org.infinispan.dataplacement;
 
-import org.infinispan.dataplacement.lookup.ObjectLookup;
+import java.util.BitSet;
+
+import org.infinispan.dataplacement.lookup.ObjectReplicationLookup;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.statetransfer.DistributedStateTransferManagerImpl;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
-
-import java.util.BitSet;
 
 /**
  * Collects all the Object Lookup from all the members. In the coordinator side, it collects all the acks before
  * triggering the state transfer
  *
  * @author Pedro Ruivo
+ * @author João Paiva
  * @since 5.2
  */
 public class ObjectLookupManager {
@@ -56,7 +57,7 @@ public class ObjectLookupManager {
     * @param objectLookup  the Object Lookup instance
     * @return              true if it has all the object lookup, false otherwise (see Note)
     */
-   public final synchronized boolean addObjectLookup(Address from, ObjectLookup objectLookup) {
+   public final synchronized boolean addObjectLookup(Address from, ObjectReplicationLookup objectLookup) {
       if (hasAllObjectLookup()) {
          return false;
       }
@@ -68,7 +69,7 @@ public class ObjectLookupManager {
          return false;
       }
 
-      stateTransfer.addObjectLookup(from, objectLookup);
+      stateTransfer.addObjectReplicationLookup(from, objectLookup);
       objectLookupReceived.set(senderId);
 
       logObjectLookupReceived(from, objectLookup);
@@ -121,7 +122,7 @@ public class ObjectLookupManager {
       return clusterSnapshot.size() == acksReceived.cardinality();
    }
 
-   private void logObjectLookupReceived(Address from, ObjectLookup objectLookup) {
+   private void logObjectLookupReceived(Address from, ObjectReplicationLookup objectLookup) {
       if (log.isTraceEnabled()) {
          StringBuilder missingMembers = new StringBuilder();
 

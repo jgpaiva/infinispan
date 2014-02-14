@@ -39,6 +39,8 @@ public class AccessesManager {
 
    private int maxNumberOfKeysToRequest;
 
+   private Map<Object, Long> localTopKeyRequestMap;
+
    public AccessesManager(DistributionManager distributionManager, int maxNumberOfKeysToRequest) {
       this.distributionManager = distributionManager;
       this.maxNumberOfKeysToRequest = maxNumberOfKeysToRequest;
@@ -81,6 +83,15 @@ public class AccessesManager {
       }
 
       return request;
+   }
+   
+   /**
+    * returns the local requests, regardless of their owner
+    *
+    * @return        the request object list. It can be empty if no requests are necessary
+    */
+   public synchronized final Map<Object, Long> getLocalTopKeyRequestMap(){
+	   return localTopKeyRequestMap;
    }
 
    /**
@@ -130,7 +141,8 @@ public class AccessesManager {
       localTopKeyRequest.merge(streamLibContainer.getTopKFrom(LOCAL_PUT), 2);
       localTopKeyRequest.merge(streamLibContainer.getTopKFrom(LOCAL_GET), 1);
 
-      sortObjectsByPrimaryOwner(localTopKeyRequest.toRequestMap(), false);
+      this.localTopKeyRequestMap = localTopKeyRequest.toRequestMap();
+      sortObjectsByPrimaryOwner(localTopKeyRequestMap, false);
 
       request.clear();
 

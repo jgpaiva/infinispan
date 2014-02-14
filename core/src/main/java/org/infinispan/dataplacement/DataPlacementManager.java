@@ -1,16 +1,24 @@
 package org.infinispan.dataplacement;
 
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.infinispan.Cache;
 import org.infinispan.cacheviews.CacheViewsManager;
 import org.infinispan.commands.CommandsFactory;
 import org.infinispan.commands.remote.DataPlacementCommand;
 import org.infinispan.commons.hash.Hash;
 import org.infinispan.configuration.cache.Configuration;
-import org.infinispan.dataplacement.lookup.ObjectLookup;
-import org.infinispan.dataplacement.lookup.ObjectLookupFactory;
+import org.infinispan.dataplacement.lookup.ObjectReplicationLookup;
+import org.infinispan.dataplacement.lookup.ObjectReplicationLookupFactory;
 import org.infinispan.dataplacement.stats.AccessesMessageSizeTask;
 import org.infinispan.dataplacement.stats.CheckKeysMovedTask;
-import org.infinispan.dataplacement.stats.ObjectLookupTask;
+import org.infinispan.dataplacement.stats.ObjectReplicationLookupTask;
 import org.infinispan.dataplacement.stats.SaveStatsTask;
 import org.infinispan.dataplacement.stats.Stats;
 import org.infinispan.distribution.DistributionManager;
@@ -29,17 +37,9 @@ import org.infinispan.statetransfer.StateTransferManager;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
-import java.io.FileOutputStream;
-import java.io.ObjectOutputStream;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 
 /**
- * Manages all phases in the dara placement protocol
+ * Manages all phases in the data placement protocol
  *
  * @author Zhongmiao Li
  * @author João Paiva
@@ -69,7 +69,7 @@ public class DataPlacementManager {
    private ObjectPlacementManager objectPlacementManager;
    private ObjectLookupManager objectLookupManager;
 
-   private ObjectLookupFactory objectLookupFactory;
+   private ObjectReplicationLookupFactory objectLookupFactory;
 
    private final RoundManager roundManager;
    private final ExecutorService statsAsync = Executors.newSingleThreadExecutor();
@@ -95,7 +95,7 @@ public class DataPlacementManager {
          return;
       }
 
-      objectLookupFactory = configuration.dataPlacement().objectLookupFactory();
+      objectLookupFactory = configuration.dataPlacement().objectReplicationLookupFactory();
       objectLookupFactory.setConfiguration(configuration);
 
       roundManager.setCoolDownTime(configuration.dataPlacement().coolDownTime());
@@ -109,7 +109,7 @@ public class DataPlacementManager {
                                                   configuration.dataPlacement().maxNumberOfKeysToRequest());
             objectPlacementManager = new ObjectPlacementManager(distributionManager,
                                                                 configuration.clustering().hash().hash(),
-                                                                defaultNumberOfOwners);
+                                                                defaultNumberOfOwners,rpcManager);
             objectLookupManager = new ObjectLookupManager((DistributedStateTransferManagerImpl) stateTransfer);
             roundManager.enable();
             cacheNotifier.addListener(this);
@@ -180,16 +180,17 @@ public class DataPlacementManager {
 
       if(objectPlacementManager.aggregateRequest(sender, objectRequest)){
          stats.receivedAccesses();
-         Map<Object, OwnersInfo> objectsToMove = objectPlacementManager.calculateObjectsToMove();
+         objectPlacementManager.setLocalRequests(accessesManager.getLocalTopKeyRequestMap());
+         Map<Object, Integer> objectsToReplicate = objectPlacementManager.calculateObjectsToReplicate();
 
          if (log.isTraceEnabled()) {
-            log.tracef("All keys request list received. Object to move are " + objectsToMove);
+            log.tracef("All keys request list received. Object to move are " + objectsToReplicate);
          }
 
-         saveObjectsToMoveToFile(objectsToMove);
+         saveObjectsToMoveToFile(objectsToReplicate);
 
          long start = System.nanoTime();
-         ObjectLookup objectLookup = objectLookupFactory.createObjectLookup(objectsToMove, defaultNumberOfOwners);
+         ObjectReplicationLookup objectLookup = objectLookupFactory.createObjectReplicationLookup(objectsToReplicate);
 
          if (objectLookup == null) {
             log.errorf("Object lookup created is null");
@@ -197,7 +198,7 @@ public class DataPlacementManager {
 
          stats.setObjectLookupCreationDuration(System.nanoTime() - start);
 
-         statsAsync.submit(new ObjectLookupTask(objectsToMove, objectLookup, stats));
+         statsAsync.submit(new ObjectReplicationLookupTask(objectsToReplicate, objectLookup, stats));
 
          if (log.isDebugEnabled()) {
             log.debugf("Created %s bloom filters and machine learner rules for each key", defaultNumberOfOwners);
@@ -206,10 +207,10 @@ public class DataPlacementManager {
          stats.calculatedNewOwners();
          DataPlacementCommand command = commandsFactory.buildDataPlacementCommand(DataPlacementCommand.Type.OBJECT_LOOKUP_PHASE,
                                                                                   roundManager.getCurrentRoundId());
-         command.setObjectLookup(objectLookup);
+         command.setObjectReplicationLookup(objectLookup);
 
          rpcManager.broadcastRpcCommand(command, false, false);
-         addObjectLookup(rpcManager.getAddress(), objectLookup, roundId);
+         addObjectReplicationLookup(rpcManager.getAddress(), objectLookup, roundId);
       }
    }
 
@@ -221,7 +222,7 @@ public class DataPlacementManager {
     * @param objectLookup           the object lookup
     * @param roundId                the round id
     */
-   public final void addObjectLookup(Address sender, ObjectLookup objectLookup, long roundId) {
+   public final void addObjectReplicationLookup(Address sender, ObjectReplicationLookup objectLookup, long roundId) {
       if (log.isDebugEnabled()) {
          log.debugf("Remote Object Lookup received from %s in round %s", sender, roundId);
       }
@@ -281,7 +282,7 @@ public class DataPlacementManager {
       roundManager.setCoolDownTime(milliseconds);
    }
 
-   private void saveObjectsToMoveToFile(Map<Object, OwnersInfo> ownersInfoMap) {
+   private void saveObjectsToMoveToFile(Map<Object, Integer> ownersInfoMap) {
       if (SAVE) {
          try {
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(

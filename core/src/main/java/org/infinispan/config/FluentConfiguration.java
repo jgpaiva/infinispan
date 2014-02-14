@@ -23,10 +23,13 @@
 
 package org.infinispan.config;
 
+import java.util.List;
+import java.util.Properties;
+
 import org.infinispan.commons.hash.Hash;
 import org.infinispan.configuration.cache.VersioningScheme;
 import org.infinispan.container.DataContainer;
-import org.infinispan.dataplacement.lookup.ObjectLookupFactory;
+import org.infinispan.dataplacement.lookup.ObjectReplicationLookupFactory;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.distribution.group.Group;
 import org.infinispan.distribution.group.Grouper;
@@ -41,9 +44,6 @@ import org.infinispan.transaction.TransactionProtocol;
 import org.infinispan.transaction.lookup.TransactionManagerLookup;
 import org.infinispan.transaction.lookup.TransactionSynchronizationRegistryLookup;
 import org.infinispan.util.concurrent.IsolationLevel;
-
-import java.util.List;
-import java.util.Properties;
 
 /**
  * Fluent configuration base class.
@@ -833,7 +833,7 @@ public class FluentConfiguration extends AbstractFluentConfigurationBean {
       DataPlacementConfig enable();
       DataPlacementConfig disable();
       DataPlacementConfig coolDowntime(int milliseconds);
-      DataPlacementConfig objectLookupFactory(ObjectLookupFactory factory);
+      DataPlacementConfig objectLookupFactory(ObjectReplicationLookupFactory factory);
       DataPlacementConfig withProperties(Properties properties);
       DataPlacementConfig addProperty(String key, String value);
       DataPlacementConfig maxNumberOfKeysToRequest(int maxNumberOfKeysToRequest);
