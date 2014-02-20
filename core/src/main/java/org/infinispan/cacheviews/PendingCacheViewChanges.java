@@ -83,7 +83,7 @@ public class PendingCacheViewChanges {
  	         }
      	 }
      	 else{
-     		 log.error("shouldMoveKey is TRUE");
+     		 log.info("shouldMoveKey is TRUE");
      		 shouldMoveKey = false;
      	 }
 

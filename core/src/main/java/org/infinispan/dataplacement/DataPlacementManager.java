@@ -200,10 +200,6 @@ public class DataPlacementManager {
 
          statsAsync.submit(new ObjectReplicationLookupTask(objectsToReplicate, objectLookup, stats));
 
-         if (log.isDebugEnabled()) {
-            log.debugf("Created %s bloom filters and machine learner rules for each key", defaultNumberOfOwners);
-         }
-
          stats.calculatedNewOwners();
          DataPlacementCommand command = commandsFactory.buildDataPlacementCommand(DataPlacementCommand.Type.OBJECT_LOOKUP_PHASE,
                                                                                   roundManager.getCurrentRoundId());
@@ -332,17 +328,17 @@ public class DataPlacementManager {
       if (log.isTraceEnabled()) {
          log.trace("Data rehashed event trigger");
       }
-      log.errorf("Data Rehash Event triggered");
+      log.info("Data Rehash Event triggered");
       if (event.getMembersAtEnd().size() == event.getMembersAtStart().size()) {
          if (log.isTraceEnabled()) {
             log.tracef("Membership didn't change. may be key movement! Is pre? %s (%s)", event.isPre(), expectPre);
          }
          if (event.isPre() && expectPre) {
-            log.errorf("Start State Transfer");
+            log.info("Start State Transfer");
             stats.startStateTransfer();
             expectPre = false;
          } else if(!event.isPre() && !expectPre) {
-            log.errorf("End State Transfer");
+            log.info("End State Transfer");
             stats.endStateTransfer();
             statsAsync.submit(new CheckKeysMovedTask(event.getKeysMoved(), objectPlacementManager, stats,
                                                      accessesManager.getDefaultConsistentHash(), rpcManager.getAddress()));

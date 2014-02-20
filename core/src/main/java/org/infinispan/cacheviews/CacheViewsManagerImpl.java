@@ -429,7 +429,7 @@ public class CacheViewsManagerImpl implements CacheViewsManager {
     *  Handle the request to move keys   by Li
     */
    public void handleRequestMoveKeys(String cacheName){
-	  log.error("signaling moving keys");
+	  log.info("signaling moving keys");
 	   
 	  CacheViewInfo cacheViewInfo = getCacheViewInfo(cacheName);
 	  cacheViewInfo.getPendingChanges().requestMoveKeys();
