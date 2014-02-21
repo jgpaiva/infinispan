@@ -6,6 +6,7 @@ import java.io.ObjectOutputStream;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.infinispan.dataplacement.DataPlacementManager;
 import org.infinispan.dataplacement.c50.C50MLObjectLookup;
 import org.infinispan.dataplacement.c50.lookup.BloomFilter;
 import org.infinispan.dataplacement.c50.tree.DecisionTree;
@@ -30,12 +31,15 @@ public class ObjectReplicationLookupTask implements Runnable {
 	private final Stats stats;
 	private final IncrementableLong[] phaseDurations;
 
-	public ObjectReplicationLookupTask(Map<Object, Integer> ownersInfoMap,
+   private DataPlacementManager dataPlacementManager;
+
+	public ObjectReplicationLookupTask(DataPlacementManager dataPlacementManager, Map<Object, Integer> ownersInfoMap,
 			ObjectReplicationLookup objectLookup, Stats stats) {
 		this.ownersInfoMap = ownersInfoMap;
 		this.objectLookup = objectLookup;
 		this.stats = stats;
 		this.phaseDurations = stats.createQueryPhaseDurationsArray();
+		this.dataPlacementManager = dataPlacementManager;
 	}
 
 	@Override
@@ -50,6 +54,8 @@ public class ObjectReplicationLookupTask implements Runnable {
 		stats.totalKeysMoved(ownersInfoMap.size());
 		stats.queryDuration(phaseDurations);
 		stats.objectLookupSize(serializedSize(objectLookup));
+		dataPlacementManager.setTotalKeysMoved(ownersInfoMap.size());
+		dataPlacementManager.setWrongOwnersErrors(errors);
 		// TODO: update with C50 real implementation
 	}
 

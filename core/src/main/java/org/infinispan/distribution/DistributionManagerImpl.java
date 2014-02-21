@@ -261,9 +261,10 @@ public class DistributionManagerImpl implements DistributionManager {
       return "DistributionManagerImpl[consistentHash=" + consistentHash + "]";
    }
 
-   /**
-    * stuff unrelated with distribution manager. I needed a place to put this.
+   /*
+    * stuff unrelated with distribution manager. I needed a place to put this, and the dataplacement manager wasn't working???
     */
+   
    private static int rgunQueueSize = 0;
    @Override
    public void setRgunQueueSize(int queueSize) {
@@ -274,5 +275,25 @@ public class DistributionManagerImpl implements DistributionManager {
    @Metric(displayName = "Size of queue on Radargun", measurementType = MeasurementType.DYNAMIC)
    public int getRgunQueueSize(){
       return rgunQueueSize;
+   }
+   
+   @ManagedAttribute(description = "Number of keys moved to the wrong nodes")
+   @Metric(displayName = "Number of keys moved to the wrong nodes by the current placement", measurementType = MeasurementType.DYNAMIC)
+   public int getDPWrongKeyOwners() {
+      return dPWrongKeyOwners;
+   }
+   public static int dPWrongKeyOwners = 0;
+   public void setDPWrongOwnersErrors(int value) {
+      dPWrongKeyOwners = value;
+   }
+   
+   @ManagedAttribute(description = "The total number of keys moved by the system")
+   @Metric(displayName = "Total number of keys moved by the current placement", measurementType = MeasurementType.DYNAMIC)
+   public int getDPTotalKeysMoved() {
+      return dPTotalKeysMoved;
+   }
+   public static int dPTotalKeysMoved = 0;
+   public void setDPTotalKeysMoved(int value) {
+      dPTotalKeysMoved = value;
    }
 }

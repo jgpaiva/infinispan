@@ -22,6 +22,7 @@ import org.infinispan.dataplacement.stats.ObjectReplicationLookupTask;
 import org.infinispan.dataplacement.stats.SaveStatsTask;
 import org.infinispan.dataplacement.stats.Stats;
 import org.infinispan.distribution.DistributionManager;
+import org.infinispan.distribution.DistributionManagerImpl;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.jmx.annotations.MBean;
 import org.infinispan.jmx.annotations.ManagedAttribute;
@@ -36,6 +37,8 @@ import org.infinispan.statetransfer.DistributedStateTransferManagerImpl;
 import org.infinispan.statetransfer.StateTransferManager;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
+import org.rhq.helpers.pluginAnnotations.agent.MeasurementType;
+import org.rhq.helpers.pluginAnnotations.agent.Metric;
 
 
 /**
@@ -76,6 +79,8 @@ public class DataPlacementManager {
 
    private Stats stats;
 
+   private DistributionManager distributionManager;
+
    public DataPlacementManager() {
       roundManager = new RoundManager(INITIAL_COOL_DOWN_TIME);
    }
@@ -89,6 +94,7 @@ public class DataPlacementManager {
       this.cacheViewsManager = cacheViewsManager;
       this.cacheName = cache.getName();
       this.hashFunction = configuration.clustering().hash().hash();
+      this.distributionManager = cache.getAdvancedCache().getDistributionManager();
 
       if (!configuration.dataPlacement().enabled()) {
          log.info("Data placement not enabled in Configuration");
@@ -198,7 +204,8 @@ public class DataPlacementManager {
 
          stats.setObjectLookupCreationDuration(System.nanoTime() - start);
 
-         statsAsync.submit(new ObjectReplicationLookupTask(objectsToReplicate, objectLookup, stats));
+         statsAsync.submit(new ObjectReplicationLookupTask(this,
+               objectsToReplicate, objectLookup, stats));
 
          stats.calculatedNewOwners();
          DataPlacementCommand command = commandsFactory.buildDataPlacementCommand(DataPlacementCommand.Type.OBJECT_LOOKUP_PHASE,
@@ -432,5 +439,15 @@ public class DataPlacementManager {
    @ManagedAttribute(description = "The max number of keys to request in each round", writable = false)
    public final int getMaxNumberOfKeysToRequest() {
       return accessesManager.getMaxNumberOfKeysToRequest();
+   }
+
+   public void setTotalKeysMoved(int value) {
+      if(distributionManager != null && distributionManager instanceof DistributionManagerImpl)
+         ((DistributionManagerImpl)distributionManager).setDPTotalKeysMoved(value);
+   }
+
+   public void setWrongOwnersErrors(int value) {
+      if(distributionManager != null && distributionManager instanceof DistributionManagerImpl)
+         ((DistributionManagerImpl)distributionManager).setDPWrongOwnersErrors(value);
    }
 }
