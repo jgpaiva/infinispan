@@ -35,6 +35,7 @@ import org.infinispan.distribution.ch.ConsistentHashHelper;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Start;
 import org.infinispan.jmx.annotations.MBean;
+import org.infinispan.jmx.annotations.ManagedAttribute;
 import org.infinispan.jmx.annotations.ManagedOperation;
 import org.infinispan.notifications.cachelistener.CacheNotifier;
 import org.infinispan.remoting.responses.ClusteredGetResponseValidityFilter;
@@ -49,6 +50,8 @@ import org.infinispan.transaction.xa.GlobalTransaction;
 import org.infinispan.util.Immutables;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
+import org.rhq.helpers.pluginAnnotations.agent.MeasurementType;
+import org.rhq.helpers.pluginAnnotations.agent.Metric;
 import org.rhq.helpers.pluginAnnotations.agent.Operation;
 import org.rhq.helpers.pluginAnnotations.agent.Parameter;
 
@@ -256,5 +259,20 @@ public class DistributionManagerImpl implements DistributionManager {
    @Override
    public String toString() {
       return "DistributionManagerImpl[consistentHash=" + consistentHash + "]";
+   }
+
+   /**
+    * stuff unrelated with distribution manager. I needed a place to put this.
+    */
+   private static int rgunQueueSize = 0;
+   @Override
+   public void setRgunQueueSize(int queueSize) {
+      DistributionManagerImpl.rgunQueueSize = queueSize;
+   }
+   
+   @ManagedAttribute(description = "The occupation of the Radargun test queue")
+   @Metric(displayName = "Size of queue on Radargun", measurementType = MeasurementType.DYNAMIC)
+   public int getRgunQueueSize(){
+      return rgunQueueSize;
    }
 }

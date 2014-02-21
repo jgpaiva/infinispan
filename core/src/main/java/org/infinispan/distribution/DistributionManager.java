@@ -159,5 +159,11 @@ public interface DistributionManager {
     * @return a list of addresses which represent a combined set of all addresses affected by the set of keys.
     */
    Collection<Address> getAffectedNodes(Collection<Object> affectedKeys);
+
+   /**
+    * Hack to get queue size from radargun
+    * @param queueSize
+    */
+   void setRgunQueueSize(int queueSize);
 }
 
