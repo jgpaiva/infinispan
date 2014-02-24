@@ -440,14 +440,23 @@ public class DataPlacementManager {
    public final int getMaxNumberOfKeysToRequest() {
       return accessesManager.getMaxNumberOfKeysToRequest();
    }
-
-   public void setTotalKeysMoved(int value) {
-      if(distributionManager != null && distributionManager instanceof DistributionManagerImpl)
-         ((DistributionManagerImpl)distributionManager).setDPTotalKeysMoved(value);
+   @ManagedAttribute(description = "Number of keys moved to the wrong nodes")
+   @Metric(displayName = "Number of keys moved to the wrong nodes by the current placement", measurementType = MeasurementType.DYNAMIC)
+   public int getDPWrongKeyOwners() {
+      return dPWrongKeyOwners;
+   }
+   public static int dPWrongKeyOwners = 0;
+   public void setWrongOwnersErrors(int value) {
+      dPWrongKeyOwners = value;
    }
 
-   public void setWrongOwnersErrors(int value) {
-      if(distributionManager != null && distributionManager instanceof DistributionManagerImpl)
-         ((DistributionManagerImpl)distributionManager).setDPWrongOwnersErrors(value);
+   @ManagedAttribute(description = "The total number of keys moved by the system")
+   @Metric(displayName = "Total number of keys moved by the current placement", measurementType = MeasurementType.DYNAMIC)
+   public int getDPTotalKeysMoved() {
+      return dPTotalKeysMoved;
+   }
+   public static int dPTotalKeysMoved = 0;
+   public void setTotalKeysMoved(int value) {
+      dPTotalKeysMoved = value;
    }
 }
