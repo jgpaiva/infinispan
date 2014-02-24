@@ -459,4 +459,14 @@ public class DataPlacementManager {
    public void setTotalKeysMoved(int value) {
       dPTotalKeysMoved = value;
    }
+
+   @ManagedAttribute(description = "The average replication degree of keys moved by the system")
+   @Metric(displayName = "Average replication degree of keys moved by the current placement", measurementType = MeasurementType.DYNAMIC)
+   public int getDPAverageReplDegree() {
+      return dPAverageReplDegree;
+   }
+   public static int dPAverageReplDegree = 0;
+   public void setDPAverageReplDegree(int value) {
+      dPAverageReplDegree = value;
+   }
 }

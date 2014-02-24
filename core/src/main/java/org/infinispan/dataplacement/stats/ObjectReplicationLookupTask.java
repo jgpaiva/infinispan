@@ -55,6 +55,13 @@ public class ObjectReplicationLookupTask implements Runnable {
 		stats.queryDuration(phaseDurations);
 		stats.objectLookupSize(serializedSize(objectLookup));
 		dataPlacementManager.setTotalKeysMoved(ownersInfoMap.size());
+      {
+         int acc = 0;
+         for (Integer i : ownersInfoMap.values()) {
+            acc += i;
+         }
+         dataPlacementManager.setDPAverageReplDegree(acc/ownersInfoMap.size());
+      }
 		dataPlacementManager.setWrongOwnersErrors(errors);
 		// TODO: update with C50 real implementation
 	}
