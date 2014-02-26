@@ -290,4 +290,17 @@ public class DistributionManagerImpl implements DistributionManager {
    public double getRgunQueueLatency() {
       return rgunQueueLatency;
    }
+
+   private static double rgunOpsLatency;
+
+   @Override
+   public void setRgunOpsLatency(double latency) {
+      DistributionManagerImpl.rgunOpsLatency = latency;
+   }
+
+   @ManagedAttribute(description = "Latency of operations as observed from Radargun")
+   @Metric(displayName = "Latency of operations as observed from Radargun", measurementType = MeasurementType.DYNAMIC)
+   public double getRgunOpsLatency() {
+      return rgunOpsLatency;
+   }
 }

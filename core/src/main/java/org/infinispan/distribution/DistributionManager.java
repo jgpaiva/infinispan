@@ -171,5 +171,10 @@ public interface DistributionManager {
     * @param queueSize
     */
    void setRgunQueueLatency(double latency);
-}
 
+   /**
+    * Hack to get operation latency from radargun
+    * @param queueSize
+    */
+   void setRgunOpsLatency(double opsLatency);
+}
