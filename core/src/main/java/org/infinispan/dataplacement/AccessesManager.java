@@ -165,7 +165,7 @@ public class AccessesManager {
 
    static int round = 0;
 
-   private void saveTopKeyRequests(StreamLibContainer streamLibContainer2) {
+   private void saveTopKeyRequests(StreamLibContainer streamLibContainer) {
       String filePath = "roundKeys_" + (round++);
 
       List<Pair<StreamLibContainer.Stat, String>> lst = new ArrayList<AccessesManager.Pair<StreamLibContainer.Stat, String>>();
@@ -177,7 +177,7 @@ public class AccessesManager {
       try {
          BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(filePath));
 
-         for (int size : new int[] { maxNumberOfKeysToRequest, streamLibContainer.getCapacity() }) {
+         for (int size : new int[] { maxNumberOfKeysToRequest, streamLibContainer.MAX_CAPACITY }) {
             for (Pair<Stat, String> i : lst) {
                Map<Object, Long> map = streamLibContainer.getTopKFrom(i.x, size);
                bufferedWriter.write(i.y + " at " + size + "= " + map.toString());
