@@ -5,9 +5,13 @@ import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.distribution.ch.DataPlacementConsistentHash;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.stats.topK.StreamLibContainer;
+import org.infinispan.stats.topK.StreamLibContainer.Stat;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -141,11 +145,51 @@ public class AccessesManager {
          }
          log.debug(stringBuilder);
       }
-
+      
+      saveTopKeyRequests(streamLibContainer);
+      
       streamLibContainer.resetStat(REMOTE_GET);
       streamLibContainer.resetStat(LOCAL_GET);
       streamLibContainer.resetStat(REMOTE_PUT);
       streamLibContainer.resetStat(LOCAL_PUT);
+   }
+   
+   public static class Pair<X,Y>{
+      public Pair(X x, Y y){
+         this.x = x;
+         this.y = y;
+      }
+      X x;
+      Y y;
+   }
+
+   static int round = 0;
+
+   private void saveTopKeyRequests(StreamLibContainer streamLibContainer2) {
+      String filePath = "roundKeys_" + (round++);
+
+      List<Pair<StreamLibContainer.Stat, String>> lst = new ArrayList<AccessesManager.Pair<StreamLibContainer.Stat, String>>();
+      lst.add(new Pair<StreamLibContainer.Stat, String>(REMOTE_PUT,"remote puts"));
+      lst.add(new Pair<StreamLibContainer.Stat, String>(REMOTE_GET,"remote gets"));
+      lst.add(new Pair<StreamLibContainer.Stat, String>(LOCAL_PUT, "local puts"));
+      lst.add(new Pair<StreamLibContainer.Stat, String>(LOCAL_GET, "local gets"));
+
+      try {
+         BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(filePath));
+
+         for (int size : new int[] { maxNumberOfKeysToRequest, streamLibContainer.getCapacity() }) {
+            for (Pair<Stat, String> i : lst) {
+               Map<Object, Long> map = streamLibContainer.getTopKFrom(i.x, size);
+               bufferedWriter.write(i.y + " at " + size + "= " + map.toString());
+               bufferedWriter.newLine();
+            }
+            bufferedWriter.newLine();
+         }
+         bufferedWriter.flush();
+         bufferedWriter.close();
+      } catch (IOException e) {
+         e.printStackTrace();
+      }
    }
 
    public final ObjectRequest[] getAccesses() {
