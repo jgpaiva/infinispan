@@ -124,6 +124,7 @@ public class AccessesManager {
 
       request.merge(streamLibContainer.getTopKFrom(REMOTE_PUT, maxNumberOfKeysToRequest), 2);
       request.merge(streamLibContainer.getTopKFrom(REMOTE_GET, maxNumberOfKeysToRequest), 1);
+      request.clear();
 
       sortObjectsByPrimaryOwner(request.toRequestMap(maxNumberOfKeysToRequest), true);
 
@@ -133,6 +134,7 @@ public class AccessesManager {
 
       localTopKeyRequest.merge(streamLibContainer.getTopKFrom(LOCAL_PUT), 2);
       localTopKeyRequest.merge(streamLibContainer.getTopKFrom(LOCAL_GET), 1);
+      request.clear();
 
       sortObjectsByPrimaryOwner(localTopKeyRequest.toRequestMap(), false);
 
