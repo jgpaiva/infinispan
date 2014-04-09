@@ -47,6 +47,8 @@ public class C50MLObjectLookup implements ObjectLookup {
 
    @Override
    public List<Integer> query(Object key) {
+       if(true)
+           return null;
       if (!bloomFilter.contains(key)) {
          return null;
       } else {
